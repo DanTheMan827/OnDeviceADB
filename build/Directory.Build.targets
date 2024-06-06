@@ -1,0 +1,34 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_DNAGeneticNugetNativePath Condition="'$(_DNAGeneticNugetNativePath)' == ''">$(MSBuildThisFileDirectory)..\</_DNAGeneticNugetNativePath>
+  </PropertyGroup>
+
+  <ItemGroup  Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_DNAGeneticNugetNativePath)content\libYse.so">
+      <Link>$(_DNAGeneticNugetNativePath)content\libYse.so</Link>
+      <Abi>armeabi-v7a</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
+  <ItemGroup  Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_DNAGeneticNugetNativePath)content\libYse.so">
+      <Link>$(_DNAGeneticNugetNativePath)content\libYse.so</Link>
+      <Abi>arm64-v8a</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
+  <ItemGroup  Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_DNAGeneticNugetNativePath)content\libYse.so">
+      <Link>$(_DNAGeneticNugetNativePath)content\libYse.so</Link>
+      <Abi>x86</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
+  <ItemGroup  Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_DNAGeneticNugetNativePath)content\libYse.so">
+      <Link>$(_DNAGeneticNugetNativePath)content\libYse.so</Link>
+      <Abi>x86_64</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+  
+</Project>

@@ -1,0 +1,10 @@
+﻿on: [push, pull_request]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: dotnet build --configuration Release

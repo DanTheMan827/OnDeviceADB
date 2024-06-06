@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>DanTheMan827.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>DanTheMan827.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+
+    <Authors>DanTheMan827</Authors>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>android;adb;adb server</PackageTags>
+    <RepositoryUrl>https://github.com/DanTheMan827/OnDeviceADB.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/DanTheMan827/OnDeviceADB</PackageProjectUrl>
+    <Copyright>Copyright ©$([System.DateTime]::Now.ToString('yyyy')) Daniel Radtke</Copyright>
+    <Description>A C# project containing ADB built for Android and a helper class to control it.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Company />
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="build\Directory.Build.targets" />
+    <None Remove="libs\arm64-v8a\libadb.so" />
+    <None Remove="libs\armeabi-v7a\libadb.so" />
+    <None Remove="libs\x86\libadb.so" />
+    <None Remove="libs\x86_64\libadb.so" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="libs\arm64-v8a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\armeabi-v7a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\x86\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libs\x86_64\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\*.*">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </Content>
+  </ItemGroup>
+
+</Project>
