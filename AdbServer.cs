@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Application = Android.App.Application;
 
 namespace DanTheMan827.OnDeviceADB
 {
@@ -7,6 +8,7 @@ namespace DanTheMan827.OnDeviceADB
     /// </summary>
     public class AdbServer : IDisposable
     {
+        public static AdbServer Instance { get; private set; } = new AdbServer();
         private static string? FilesDir => Application.Context?.FilesDir?.Path;
         private static string? CacheDir => Application.Context?.CacheDir?.Path;
         private static string? NativeLibsDir => Application.Context.ApplicationInfo?.NativeLibraryDir;
@@ -23,7 +25,7 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         public bool IsRunning => ServerProcess != null && !ServerProcess.HasExited;
 
-        public AdbServer()
+        private AdbServer()
         {
             Debug.Assert(FilesDir != null);
             Debug.Assert(CacheDir != null);
@@ -96,7 +98,7 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// Stops the server if running.
         /// </summary>
-        public void Stop() => DisposeVariables(true);
+        public void Stop(bool force = true) => DisposeVariables(force);
 
         public void Dispose() => Stop();
     }
