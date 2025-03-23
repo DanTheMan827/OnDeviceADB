@@ -16,6 +16,23 @@ namespace DanTheMan827.OnDeviceADB
         public AdbSample() { }
 
         /// <summary>
+        /// Checks if we have our needed permissions by trying to set the Wi-Fi debugging state
+        /// </summary>
+        /// <returns></returns>
+        private bool HasPermission()
+        {
+            try
+            {
+                AdbWrapper.AdbWifiState = AdbWrapper.AdbWifiState;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Initializes the ADB sample asynchronously.  This should only be run once.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -46,25 +63,22 @@ namespace DanTheMan827.OnDeviceADB
                     // If the port is above 0 we were successful.
                     if (port > 0)
                     {
+                        // Disconnect all devices.
+                        await AdbWrapper.DisconnectAsync();
+
                         // Connect to the loopback IP on the detected port.
                         var device = await AdbWrapper.ConnectAsync("127.0.0.1", port);
-
-                        // Switch to tcpip mode.
-                        await AdbWrapper.TcpIpMode(device);
-
-                        // Kill the server to ensure it refreshes.
-                        await AdbWrapper.KillServerAsync();
-
-                        // Launch the server.
-                        await AdbWrapper.StartServerAsync();
                     }
 
                     // Restore the saved wireless debugging state.
                     AdbWrapper.AdbWifiState = adbWifiState;
                 }
 
-                // Grant necessary permissions to all connected devices.
-                await AdbWrapper.GrantPermissionsAsync();
+                if (!HasPermission())
+                {
+                    // Grant necessary permissions to all connected devices (This may force quit the app!).
+                    await AdbWrapper.GrantPermissionsAsync();
+                }
             }
 
             // Return our own instance for chaining.

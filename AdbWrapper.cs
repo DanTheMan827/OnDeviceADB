@@ -11,9 +11,25 @@ namespace DanTheMan827.OnDeviceADB
     public static class AdbWrapper
     {
         /// <summary>
+        /// The command to grant the necessary permissions for the app to toggle ADB over WiFi.
+        /// </summary>
+        public static string GrantPermissionsCommand => $"(pm grant {Application.Context.PackageName} android.permission.WRITE_SECURE_SETTINGS; pm grant {Application.Context.PackageName} android.permission.READ_LOGS)";
+        public class AdbDevice
+        {
+            public readonly string Name;
+            public readonly bool Authorized;
+
+            public AdbDevice(string name, bool authorized)
+            {
+                Name = name;
+                Authorized = authorized;
+            }
+        }
+
+        /// <summary>
         /// Gets the path to the ADB executable.
         /// </summary>
-        public static string? AdbPath => AdbServer.AdbPath;
+        public static string AdbPath => AdbServer.AdbPath;
 
         /// <summary>
         /// Checks if the ADB server is running.
@@ -42,7 +58,7 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// Stops the ADB server asynchronously.
         /// </summary>
-        public static async Task StopServerAsync() => AdbServer.Instance.Stop();
+        public static async Task StopServerAsync() => await Task.Run(() => AdbServer.Instance.Stop());
 
         /// <summary>
         /// Kills the ADB server asynchronously.
@@ -60,6 +76,7 @@ namespace DanTheMan827.OnDeviceADB
         /// <returns>An ExitInfo object containing the exit code, error message, and output of the command.</returns>
         public static async Task<ExitInfo> RunAdbCommandAsync(params string[] arguments)
         {
+            Debug.WriteLine($"RunAdbCommand -P {AdbServer.AdbPort} {String.Join(" ", arguments)}");
             await StartServerAsync();
 
             var procStartInfo = new ProcessStartInfo(AdbPath)
@@ -67,6 +84,9 @@ namespace DanTheMan827.OnDeviceADB
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
             };
+
+            procStartInfo.ArgumentList.Add("-P");
+            procStartInfo.ArgumentList.Add(AdbServer.AdbPort.ToString());
 
             foreach (var argument in arguments)
             {
@@ -93,8 +113,8 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// Gets the ADB WiFi port asynchronously.
         /// </summary>
-        /// <returns>The ADB WiFi port number.</returns>
-        private static async Task<int> GetAdbWiFiPortAsync()
+        /// <returns>The ADB last known WiFi port number, or 0.</returns>
+        public static async Task<int> GetAdbWiFiPortAsync()
         {
             var logProc = Process.Start(new ProcessStartInfo()
             {
@@ -193,7 +213,7 @@ namespace DanTheMan827.OnDeviceADB
         /// Gets the list of connected ADB devices asynchronously.
         /// </summary>
         /// <returns>An array of device identifiers.</returns>
-        public static async Task<string[]> GetDevicesAsync()
+        public static async Task<AdbDevice[]> GetDevicesAsync()
         {
             await StartServerAsync();
 
@@ -204,9 +224,9 @@ namespace DanTheMan827.OnDeviceADB
                 throw new AdbException(output.Output);
             }
 
-            var matches = Regex.Matches(output.Output, "^(.*?)\\tdevice$", RegexOptions.Multiline);
+            var matches = Regex.Matches(output.Output, "^(.*?)\\t(device|unauthorized)$", RegexOptions.Multiline);
 
-            return matches.Select(match => match.Groups[1].Value.Trim()).ToArray();
+            return matches.Select(match => new AdbDevice(match.Groups[1].Value.Trim(), match.Groups[2].Value == "device")).ToArray();
         }
 
         /// <summary>
@@ -216,9 +236,7 @@ namespace DanTheMan827.OnDeviceADB
         public static async Task GrantPermissionsAsync(string device)
         {
             await StartServerAsync();
-
-            await RunAdbCommandAsync("-s", device, "shell", "pm", "grant", Application.Context.PackageName, "android.permission.WRITE_SECURE_SETTINGS");
-            await RunAdbCommandAsync("-s", device, "shell", "pm", "grant", Application.Context.PackageName, "android.permission.READ_LOGS");
+            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{GrantPermissionsCommand}' > /dev/null 2>&1 < /dev/null &");
         }
 
         /// <summary>
@@ -230,9 +248,9 @@ namespace DanTheMan827.OnDeviceADB
 
             var devices = await GetDevicesAsync();
 
-            foreach (var device in devices)
+            foreach (var device in devices.Where(d => d.Authorized))
             {
-                await GrantPermissionsAsync(device);
+                await GrantPermissionsAsync(device.Name);
             }
         }
 

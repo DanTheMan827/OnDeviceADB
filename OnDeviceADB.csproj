@@ -38,25 +38,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="libs\arm64-v8a\libadb.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\armeabi-v7a\libadb.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\x86\libadb.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libs\x86_64\libadb.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="build\*.*">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidNativeLibrary Update="libs\arm64-v8a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\armeabi-v7a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\x86\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\x86_64\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
   </ItemGroup>
 
 </Project>

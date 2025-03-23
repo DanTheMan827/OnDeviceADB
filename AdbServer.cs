@@ -8,30 +8,25 @@ namespace DanTheMan827.OnDeviceADB
     /// </summary>
     public class AdbServer : IDisposable
     {
+        public static int AdbPort = 5037;
         public static AdbServer Instance { get; private set; } = new AdbServer();
-        private static string? FilesDir => Application.Context?.FilesDir?.Path;
-        private static string? CacheDir => Application.Context?.CacheDir?.Path;
-        private static string? NativeLibsDir => Application.Context.ApplicationInfo?.NativeLibraryDir;
+        private static string FilesDir => Application.Context?.FilesDir?.Path ?? throw new Exception("Unable to determine application files path");
+        private static string CacheDir => Application.Context?.CacheDir?.Path ?? throw new Exception("Unable to determine application cache path");
+        private static string NativeLibsDir => Application.Context.ApplicationInfo?.NativeLibraryDir ?? throw new Exception("Unable to determine native libs path");
         private CancellationTokenSource? CancelToken { get; set; }
         private Process? ServerProcess { get; set; }
 
         /// <summary>
         /// Path to the adb binary.
         /// </summary>
-        public static string? AdbPath => NativeLibsDir != null ? Path.Combine(NativeLibsDir, "libadb.so") : null;
+        public static string AdbPath => NativeLibsDir != null ? Path.Combine(NativeLibsDir, "libadb.so") : throw new Exception("Unable to determine adb path");
 
         /// <summary>
         /// If the server is running
         /// </summary>
         public bool IsRunning => ServerProcess != null && !ServerProcess.HasExited;
 
-        private AdbServer()
-        {
-            Debug.Assert(FilesDir != null);
-            Debug.Assert(CacheDir != null);
-            Debug.Assert(NativeLibsDir != null);
-            Debug.Assert(AdbPath != null);
-        }
+        private AdbServer() { }
         private async Task StartServer()
         {
             // Asserts
@@ -39,12 +34,14 @@ namespace DanTheMan827.OnDeviceADB
             Debug.Assert(this.CancelToken == null);
 
             // Create and configure the ProcessStartInfo.
-            var adbInfo = new ProcessStartInfo(AdbPath, "server nodaemon");
+            var adbInfo = new ProcessStartInfo(AdbPath, $"-P {AdbPort} server nodaemon");
             adbInfo.WorkingDirectory = FilesDir;
             adbInfo.RedirectStandardOutput = true;
             adbInfo.RedirectStandardError = true;
             adbInfo.EnvironmentVariables["HOME"] = FilesDir;
             adbInfo.EnvironmentVariables["TMPDIR"] = CacheDir;
+            adbInfo.EnvironmentVariables["ADB_MDNS"] = "0";
+            adbInfo.EnvironmentVariables["ADB_MDNS_AUTO_CONNECT"] = "";
 
             // Start the process
             ServerProcess = Process.Start(adbInfo);
