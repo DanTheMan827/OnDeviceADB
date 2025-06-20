@@ -219,7 +219,7 @@ namespace DanTheMan827.OnDeviceADB
         public static async Task GrantPermissionsAsync(string device)
         {
             await StartServerAsync();
-            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{SharedData.GrantPermissionsCommand}' > /dev/null 2>&1 < /dev/null &");
+            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{SharedData.GrantPermissionsCommand}; {SharedData.AppRestartCommand}' > /dev/null 2>&1 < /dev/null &");
         }
 
         /// <summary>
