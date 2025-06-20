@@ -13,7 +13,7 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// The command to grant the necessary permissions for the app to toggle ADB over WiFi.
         /// </summary>
-        public static string GrantPermissionsCommand => $"(pm grant {Application.Context.PackageName} android.permission.WRITE_SECURE_SETTINGS; pm grant {Application.Context.PackageName} android.permission.READ_LOGS)";
+        public static string GrantPermissionsCommand => SharedData.GrantPermissionsCommand;
         public class AdbDevice
         {
             public readonly string Name;
@@ -113,32 +113,15 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// Gets the ADB WiFi port asynchronously.
         /// </summary>
-        /// <returns>The ADB last known WiFi port number, or 0.</returns>
-        public static async Task<int> GetAdbWiFiPortAsync()
+        /// <returns>The current ADB WiFi port, or 0 if none found.</returns>
+        public static async Task<ushort> GetAdbWiFiPortAsync()
         {
-            var logProc = Process.Start(new ProcessStartInfo()
+            var process = Process.Start(new ProcessStartInfo(SharedData.AdbFinderPath)
             {
-                FileName = "logcat",
-                Arguments = "-d -s adbd -e adbwifi*",
                 RedirectStandardOutput = true
             });
-
-            if (logProc == null)
-            {
-                throw new NullReferenceException(nameof(logProc));
-            }
-
-            await logProc.WaitForExitAsync();
-
-            var output = await logProc.StandardOutput.ReadToEndAsync();
-            var matches = Regex.Matches(output, "adbwifi started on port (\\d+)");
-
-            if (matches.Count > 0)
-            {
-                return int.Parse(matches.Last().Groups[1].Value);
-            }
-
-            return 0;
+            await process.WaitForExitAsync();
+            return UInt16.Parse(process.StandardOutput.ReadToEnd().Trim().Split("\n").Where(l => l.Trim() != "").FirstOrDefault("0"));
         }
 
         /// <summary>
@@ -236,7 +219,7 @@ namespace DanTheMan827.OnDeviceADB
         public static async Task GrantPermissionsAsync(string device)
         {
             await StartServerAsync();
-            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{GrantPermissionsCommand}' > /dev/null 2>&1 < /dev/null &");
+            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{SharedData.GrantPermissionsCommand}' > /dev/null 2>&1 < /dev/null &");
         }
 
         /// <summary>
@@ -251,6 +234,50 @@ namespace DanTheMan827.OnDeviceADB
             foreach (var device in devices.Where(d => d.Authorized))
             {
                 await GrantPermissionsAsync(device.Name);
+            }
+        }
+
+        /// <summary>
+        /// Checks if we have the necessary permissions.
+        /// </summary>
+        /// <returns></returns>
+        public static bool HasPermissions()
+        {
+            try
+            {
+                AdbWrapper.AdbWifiState = AdbWrapper.AdbWifiState;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restarts the app on a specific ADB device asynchronously.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <returns></returns>
+        public static async Task RestartAppAsync(string device)
+        {
+            await StartServerAsync();
+            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{SharedData.AppRestartCommand}' > /dev/null 2>&1 < /dev/null &");
+        }
+
+        /// <summary>
+        /// Restarts the application on all authorized devices.
+        /// </summary>
+        /// <returns>.</returns>
+        public static async Task RestartAppAsync()
+        {
+            await StartServerAsync();
+
+            var devices = await GetDevicesAsync();
+
+            foreach (var device in devices.Where(d => d.Authorized))
+            {
+                await RestartAppAsync(device.Name);
             }
         }
 

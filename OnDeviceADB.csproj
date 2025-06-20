@@ -38,6 +38,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="libs\arm64-v8a\libAdbFinder.so" />
+    <None Remove="libs\armeabi-v7a\libAdbFinder.so" />
+    <None Remove="libs\x86\libAdbFinder.so" />
+    <None Remove="libs\x86_64\libAdbFinder.so" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="build\*.*">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
@@ -55,6 +62,21 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </AndroidNativeLibrary>
     <AndroidNativeLibrary Update="libs\x86_64\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidNativeLibrary Update="libs\arm64-v8a\libAdbFinder.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\armeabi-v7a\libAdbFinder.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\x86\libAdbFinder.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Update="libs\x86_64\libAdbFinder.so">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </AndroidNativeLibrary>
   </ItemGroup>

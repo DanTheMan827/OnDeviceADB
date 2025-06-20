@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Application = Android.App.Application;
 
 namespace DanTheMan827.OnDeviceADB
 {
@@ -10,16 +9,14 @@ namespace DanTheMan827.OnDeviceADB
     {
         public static int AdbPort = 5037;
         public static AdbServer Instance { get; private set; } = new AdbServer();
-        private static string FilesDir => Application.Context?.FilesDir?.Path ?? throw new Exception("Unable to determine application files path");
-        private static string CacheDir => Application.Context?.CacheDir?.Path ?? throw new Exception("Unable to determine application cache path");
-        private static string NativeLibsDir => Application.Context.ApplicationInfo?.NativeLibraryDir ?? throw new Exception("Unable to determine native libs path");
+
         private CancellationTokenSource? CancelToken { get; set; }
         private Process? ServerProcess { get; set; }
 
         /// <summary>
         /// Path to the adb binary.
         /// </summary>
-        public static string AdbPath => NativeLibsDir != null ? Path.Combine(NativeLibsDir, "libadb.so") : throw new Exception("Unable to determine adb path");
+        public static string AdbPath => SharedData.AdbPath;
 
         /// <summary>
         /// If the server is running
@@ -35,11 +32,11 @@ namespace DanTheMan827.OnDeviceADB
 
             // Create and configure the ProcessStartInfo.
             var adbInfo = new ProcessStartInfo(AdbPath, $"-P {AdbPort} server nodaemon");
-            adbInfo.WorkingDirectory = FilesDir;
+            adbInfo.WorkingDirectory = SharedData.FilesDir;
             adbInfo.RedirectStandardOutput = true;
             adbInfo.RedirectStandardError = true;
-            adbInfo.EnvironmentVariables["HOME"] = FilesDir;
-            adbInfo.EnvironmentVariables["TMPDIR"] = CacheDir;
+            adbInfo.EnvironmentVariables["HOME"] = SharedData.FilesDir;
+            adbInfo.EnvironmentVariables["TMPDIR"] = SharedData.CacheDir;
             adbInfo.EnvironmentVariables["ADB_MDNS"] = "0";
             adbInfo.EnvironmentVariables["ADB_MDNS_AUTO_CONNECT"] = "";
 
